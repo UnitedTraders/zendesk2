@@ -44,26 +44,22 @@ class _ZendeskChat extends State<ZendeskChat> {
 
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await _z.connect();
-      _subscriptionProvidersStream =
-          _z.providersStream?.listen((providerModel) {
+      _subscriptionProvidersStream = _z.providersStream?.listen((providerModel) {
         _providerModel = providerModel;
         print('ProviderModel: $_providerModel');
         setState(() {});
       });
-      _subscriptionChatSettingsStream =
-          _z.chatSettingsStream?.listen((settingsModel) {
+      _subscriptionChatSettingsStream = _z.chatSettingsStream?.listen((settingsModel) {
         _chatSettingsModel = settingsModel;
         print('Chat Settings: $_chatSettingsModel');
         setState(() {});
       });
-      _subscriptionConnetionStatusStream =
-          _z.connectionStatusStream?.listen((connectionStatus) {
+      _subscriptionConnetionStatusStream = _z.connectionStatusStream?.listen((connectionStatus) {
         _connectionStatus = connectionStatus;
         print('Connection Status: $_connectionStatus');
         setState(() {});
       });
-      _subscriptionAccountProvidersStream =
-          _z.chatIsOnlineStream?.listen((chatAccountModel) {
+      _subscriptionAccountProvidersStream = _z.chatIsOnlineStream?.listen((chatAccountModel) {
         _chatAccountModel = chatAccountModel;
         print('isOnline: $_chatAccountModel');
         setState(() {});
@@ -74,8 +70,7 @@ class _ZendeskChat extends State<ZendeskChat> {
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
-    final isOnline =
-        ((_chatAccountModel?.isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
+    final isOnline = ((_chatAccountModel?.isOnline ?? false) ? 'ONLINE' : 'OFFLINE');
     return WillPopScope(
       onWillPop: _onWillPopScope,
       child: Scaffold(
@@ -91,8 +86,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_providerModel != null &&
-                          _providerModel!.agents.isNotEmpty)
+                      if (_providerModel != null && _providerModel!.agents.isNotEmpty)
                         if (_providerModel!.agents.first.isTyping)
                           Text(
                             'Agent is typing...',
@@ -105,14 +99,9 @@ class _ZendeskChat extends State<ZendeskChat> {
                             if (_chatSettingsModel?.fileSizeLimit != null)
                               Column(
                                 children: [
-                                  Text('Can send files: ' +
-                                      _chatSettingsModel!.isFileSendingEnabled!
-                                          .toString()),
+                                  Text('Can send files: ' + _chatSettingsModel!.isFileSendingEnabled!.toString()),
                                   Text('Fle size limit: ' +
-                                      (_chatSettingsModel!.fileSizeLimit! ~/
-                                              1024)
-                                          .toString()
-                                          .substring(0, 2) +
+                                      (_chatSettingsModel!.fileSizeLimit! ~/ 1024).toString().substring(0, 2) +
                                       ' MB'),
                                 ],
                               ),
@@ -162,18 +151,17 @@ class _ZendeskChat extends State<ZendeskChat> {
     final compatibleExt = _chatSettingsModel?.supportedFileTypes;
 
     final result = isPhoto
-        ? await ImagePicker.pickImage(source: ImageSource.gallery)
+        ? await ImagePicker().pickImage(source: ImageSource.gallery)
         : await FilePicker.platform.pickFiles(
             allowMultiple: false,
             type: FileType.custom,
             allowedExtensions: compatibleExt?.toList() ?? [],
           );
-    final file =
-        result is FilePickerResult ? result.files.single : (result as File);
+    final file = result is FilePickerResult ? result.files.single : (result as File);
 
     final path = file is PlatformFile ? file.path : (file as File).path;
 
-    _z.sendFile(path);
+    _z.sendFile(path!);
   }
 
   void _settings() async {
@@ -216,8 +204,7 @@ class _ZendeskChat extends State<ZendeskChat> {
         child: Card(
           color: Theme.of(context).primaryColor,
           elevation: 10,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
           child: Container(
             padding: EdgeInsets.all(5),
             child: Column(
@@ -287,9 +274,7 @@ class _ZendeskChat extends State<ZendeskChat> {
               bool isAgent = log.chatParticipant == CHAT_PARTICIPANT.AGENT;
 
               Agent? agent;
-              if (isAgent)
-                agent = _providerModel!.agents
-                    .firstWhereOrNull((element) => element.displayName == name);
+              if (isAgent) agent = _providerModel!.agents.firstWhereOrNull((element) => element.displayName == name);
 
               switch (log.chatLogType.logType) {
                 case LOG_TYPE.ATTACHMENT_MESSAGE:
@@ -316,9 +301,7 @@ class _ZendeskChat extends State<ZendeskChat> {
 
               final imageUrl = log.chatLogType.chatAttachment?.url;
 
-              final mimeType = log
-                  .chatLogType.chatAttachment?.chatAttachmentAttachment.mimeType
-                  ?.toLowerCase();
+              final mimeType = log.chatLogType.chatAttachment?.chatAttachmentAttachment.mimeType?.toLowerCase();
               final isImage = mimeType == null
                   ? false
                   : (mimeType.contains('jpg') ||
@@ -339,9 +322,7 @@ class _ZendeskChat extends State<ZendeskChat> {
                       ),
                     )
                   : Row(
-                      mainAxisAlignment: isVisitor
-                          ? MainAxisAlignment.end
-                          : MainAxisAlignment.start,
+                      mainAxisAlignment: isVisitor ? MainAxisAlignment.end : MainAxisAlignment.start,
                       children: [
                         Container(
                           padding: EdgeInsets.all(5),
@@ -350,41 +331,30 @@ class _ZendeskChat extends State<ZendeskChat> {
                             children: [
                               if (isAgent)
                                 agent?.avatar != null
-                                    ? CachedNetworkImage(
-                                        imageUrl: agent!.avatar ?? '')
+                                    ? CachedNetworkImage(imageUrl: agent!.avatar ?? '')
                                     : Icon(Icons.person),
                               Card(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                                 child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.5,
+                                  width: MediaQuery.of(context).size.width * 0.5,
                                   padding: EdgeInsets.all(10),
                                   child: Column(
                                     children: [
                                       if (isAttachment)
                                         GestureDetector(
-                                          onTap: () => launch(log
-                                                  .chatLogType
-                                                  .chatAttachment
-                                                  ?.chatAttachmentAttachment
-                                                  .url ??
-                                              ''),
+                                          onTap: () => launch(
+                                              log.chatLogType.chatAttachment?.chatAttachmentAttachment.url ?? ''),
                                           child: isImage
                                               ? CachedNetworkImage(
                                                   imageUrl: imageUrl ?? '',
-                                                  placeholder: (context, url) =>
-                                                      CircularProgressIndicator(),
+                                                  placeholder: (context, url) => CircularProgressIndicator(),
                                                 )
                                               : Column(
                                                   children: [
                                                     Icon(FontAwesomeIcons.file),
-                                                    Text(log
-                                                            .chatLogType
-                                                            .chatAttachment
-                                                            ?.chatAttachmentAttachment
-                                                            .name ??
-                                                        '')
+                                                    Text(
+                                                        log.chatLogType.chatAttachment?.chatAttachmentAttachment.name ??
+                                                            '')
                                                   ],
                                                 ),
                                         ),
